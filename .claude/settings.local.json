@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/edddie -name matrix_deathstar.py -not -path */.*)",
+      "Bash(bash install_matrix.sh)",
+      "Bash(echo $SHLVL)",
+      "Bash(python3 /Users/edddie/.config/matrix/matrix_deathstar.py)",
+      "Bash(echo \"exit code: $?\")",
+      "Bash(python3 -c \"import os; rows, cols = os.get_terminal_size\\(\\); print\\(f''rows={rows} cols={cols}''\\)\")",
+      "Bash(chmod +x /Users/edddie/.config/matrix/electro_rain.py)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3 -c \"import pygame; print\\(pygame.ver\\)\")",
+      "Bash(pip3 install:*)",
+      "Bash(chmod +x /Users/edddie/.config/matrix/electro_splash.py /Users/edddie/.config/matrix/electro_rain.py)",
+      "Bash(osascript -e ':*)",
+      "Bash(python3 /Users/edddie/.config/matrix/electro_splash.py)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh repo:*)",
+      "Bash(brew install:*)",
+      "Bash(/opt/homebrew/bin/brew install:*)",
+      "Bash(/opt/homebrew/bin/gh auth:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "WebSearch",
+      "Bash(curl -L -o starjedi.zip \"https://dl.dafont.com/dl/?f=star_jedi\")",
+      "Bash(unzip -o starjedi.zip -d starjedi)",
+      "Bash(ls /tmp/starjedi/*.ttf)",
+      "Bash(ls /tmp/starjedi/*.TTF)"
+    ]
+  }
+}

@@ -211,7 +211,7 @@ def main():
     RAIN, FILL, DRAIN, HOLD, FADE = -1, 0, 1, 2, 3
     phase = RAIN
     phase_wait = 0
-    HOLD_FRAMES = 120  # ~3 sec clean Death Star on screen
+    HOLD_FRAMES = 120   # ~3 sec clean Death Star
 
     def spawn_drop(c):
         length = 5 + int(random.random() * 22)
@@ -222,6 +222,7 @@ def main():
             'bright': random.random() > 0.85,
         })
 
+    # Spawn initial drops
     for c in range(COLS):
         if random.random() < 0.28:
             spawn_drop(c)
@@ -267,8 +268,8 @@ def main():
             e = edge_cells[int(random.random() * len(edge_cells))]
             e['ch'] = rc()
 
-        # Spawn drops (during RAIN and FILL)
-        if phase <= FILL:  # rain stops after fill complete
+        # Spawn drops
+        if phase <= FILL:
             for c in range(COLS):
                 if random.random() < 0.035 and len(drops[c]) < 4:
                     spawn_drop(c)
@@ -285,7 +286,7 @@ def main():
 
                 row = int(d['y'])
 
-                # Check if a drop reached the bottom (for RAIN → FILL)
+                # Check if a drop reached the bottom
                 if row >= ROWS - 1:
                     first_landed = True
 
@@ -307,8 +308,11 @@ def main():
                 col.pop(i)
 
         # Phase transitions
-        if phase == RAIN and first_landed:
-            phase = FILL  # first drop hit bottom, start building the sphere
+        if phase == RAIN:
+            # Let rain fall freely for a bit after text is gone
+            phase_wait += 1
+            if first_landed and phase_wait > FPS * 2:
+                phase = FILL
 
         if phase == FILL:
             full = all(len(col_rows[c]) == 0 or len(stacks[c]) >= len(col_rows[c])
@@ -343,22 +347,46 @@ def main():
             if s and random.random() < 0.003:
                 s[int(random.random() * len(s))] = rc()
 
+
         # ── Render ───────────────────────────────────────
         px = lambda c: c * FS
         py = lambda r: r * FS
 
-        # 1. Death Star outline (shaded — duller near limb)
-        for e in edge_cells:
-            sh = shade_grid[e['r']][e['c']]
-            # Base greens, scaled by shade (duller at edges)
-            if e['type'] == 'outer':
-                g = int(40 + 62 * sh)
-            elif e['type'] == 'trench':
-                g = int(30 + 52 * sh)
-            else:  # dish
-                g = int(25 + 40 * sh)
-            color = (0, g, max(2, g // 12))
-            screen.blit(get_surf(e['ch'], color), (px(e['c']), py(e['r'])))
+        # 1. Death Star outline — revealed by fill, not before.
+        #    An edge cell only shows if the fill has reached its row.
+        #    We track the highest (topmost) filled row per column.
+        if phase >= FILL:
+            # Build a quick lookup: highest filled row per column
+            top_filled = {}
+            for c in range(COLS):
+                n = len(stacks[c])
+                if n > 0 and len(col_rows[c]) > 0:
+                    # col_rows is bottom-to-top, so stacks[c][-1] maps to the topmost filled
+                    top_filled[c] = col_rows[c][n - 1]
+
+            for e in edge_cells:
+                er, ec = e['r'], e['c']
+                # Only show if fill has reached this row in this or nearby columns
+                revealed = False
+                for nc in range(max(0, ec - 2), min(COLS, ec + 3)):
+                    if nc in top_filled and top_filled[nc] <= er:
+                        revealed = True
+                        break
+                # After DRAIN (fill complete), show everything
+                if phase >= DRAIN:
+                    revealed = True
+                if not revealed:
+                    continue
+
+                sh = shade_grid[er][ec]
+                if e['type'] == 'outer':
+                    g = int(40 + 62 * sh)
+                elif e['type'] == 'trench':
+                    g = int(30 + 52 * sh)
+                else:  # dish
+                    g = int(25 + 40 * sh)
+                color = (0, g, max(2, g // 12))
+                screen.blit(get_surf(e['ch'], color), (px(ec), py(er)))
 
         # 2. Settled chars (Tetris fill with gradient + 3D shade)
         for c in range(COLS):
